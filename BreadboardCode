@@ -1,0 +1,101 @@
+#include <LiquidCrystal.h>
+
+//detect objects ahead and records in centimeters
+long readUltrasonicDistance(int triggerPin, int echoPin)
+{
+  pinMode(triggerPin,OUTPUT);
+  digitalWrite(triggerPin,LOW);
+  delayMicroseconds(10);
+  digitalWrite(triggerPin,LOW);
+  pinMode(echoPin,INPUT);
+  
+  return pulseIn(echoPin,HIGH);
+
+}
+
+//declaration of variables
+int distance = 0;
+int distance1 = 0;
+int const buzzPin = 8;
+int const trigleft = 10;
+int const echoleft = 9;
+int const trigrit = 6;
+int const echorit = 7;
+
+// initialize the library with the numbers of the interface pins
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+void setup() {
+  // set up the LCD's number of columns and rows:
+  lcd.begin(16, 2);
+  
+  Serial.begin(9600);
+  //set buzz pin as the output pin
+  pinMode(buzzPin, OUTPUT);
+  
+
+}
+
+
+void loop() {
+  //clear initial distance to start loop
+  digitalWrite(trigleft,LOW);
+  digitalWrite(trigrit,LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigleft,HIGH);
+  digitalWrite(trigrit,HIGH);
+  delayMicroseconds(10);
+  //calculate distance from the sensor
+  distance = 0.01723*readUltrasonicDistance(trigleft,echoleft);
+  distance1 = 0.01723*readUltrasonicDistance(trigrit,echorit);
+  //print left door distance
+  Serial.println(distance);
+  //print right door distance
+  Serial.println(distance1);
+  
+  //Conditions to alarm the house
+  //if both doors are less than 1.5 m
+  if (distance && distance1 < 150) {
+    tone(buzzPin, 850);
+    lcd.setCursor(0, 0);
+    lcd.print("Stranger on both ");
+    lcd.setCursor(1, 1);
+    lcd.print(distance);
+    lcd.setCursor(4, 1);
+    lcd.print(distance1);
+    lcd.setCursor(6, 1);
+    lcd.print("cm away ");
+    
+    //if left door stranger is less than 1.5 m
+  } else if (distance < 150) {
+  tone(buzzPin, 850);
+    lcd.setCursor(0, 0);
+    lcd.print("Stranger on left ");
+    lcd.setCursor(1, 1);
+    lcd.print(distance );
+    lcd.setCursor(3, 1);
+    lcd.print("cm away ");
+    
+    //if right door stranger is less than 1.5 m
+  } else if (distance1 < 150) {
+  tone(buzzPin, 850);
+    lcd.setCursor(0, 0);
+    lcd.print("Stranger on right ");
+    lcd.setCursor(1, 1);
+    lcd.print(distance1 );
+    lcd.setCursor(3, 1);
+    lcd.print("cm away ");
+    
+  } else {
+    noTone(buzzPin);  //else do not buzz
+    
+  }
+  
+  
+  delay(100); // Delay a little bit to improve simulation performance
+
+}
+ 
+
+
+
+
